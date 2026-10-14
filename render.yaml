@@ -36,7 +36,6 @@ services:
   - type: web
     name: brainfactory-web
     runtime: static
-    plan: free
     buildCommand: >-
       npm i -g bun &&
       bun install &&
