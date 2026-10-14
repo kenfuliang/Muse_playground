@@ -1,0 +1,12 @@
+@import '@brainfactory/ui/src/tokens.css';
+
+/* web-only additions (kept minimal — tokens own the system) */
+.bf-job-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; font-size: 18px; }
+.bf-job-meta .k { color: var(--bf-text-2); font-size: 14px; }
+.bf-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+.bf-form-grid { display: grid; gap: 4px; }
+.bf-select {
+  width: 100%; min-height: 56px; font-size: 18px; font-family: var(--bf-font);
+  background: var(--bf-bg); border: 2px solid var(--bf-border);
+  border-radius: var(--bf-radius-btn); color: var(--bf-text); padding: 8px 12px;
+}
