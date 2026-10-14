@@ -1,0 +1,129 @@
+// Minimal MES v1 data model for a plastic injection molding shop.
+// tenant_id is reserved on core tables for a future multi-factory world.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN // 生管 / 管理者
+  WORKER // 現場工人
+}
+
+enum WorkOrderStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+model User {
+  id        String   @id @default(cuid())
+  tenantId  String   @default("longteam")
+  name      String
+  badgeCode String   @unique // BF-USER-<id> — 掃證登入
+  pin       String? // 4 位 PIN 備案（存 hash）
+  role      Role     @default(WORKER)
+  lang      String   @default("zh") // zh | vi
+  createdAt DateTime @default(now())
+
+  workOrders WorkOrder[]   @relation("Assignee")
+  reports    WorkReport[]
+  auditLogs  AuditLog[]
+}
+
+model Machine {
+  id        String   @id @default(cuid())
+  tenantId  String   @default("longteam")
+  code      String // 機台編號，如 M-01
+  name      String
+  tonnage   Int? // 鎖模力（噸）
+  status    String   @default("IDLE") // IDLE | RUNNING | DOWN
+  createdAt DateTime @default(now())
+
+  workOrders WorkOrder[]
+
+  @@unique([tenantId, code])
+}
+
+model Mold {
+  id                       String   @id @default(cuid())
+  tenantId                 String   @default("longteam")
+  code                     String // 模號，如 MT-8801-A
+  name                     String
+  cavityCount              Int      @default(1) // 模穴數
+  totalShots               Int      @default(0) // 累計模次 — 系統的心跳
+  lastMaintenanceShots     Int      @default(0)
+  maintenanceIntervalShots Int? // null = 尚未設定保養週期（工廠目前無確切規則）
+  createdAt                DateTime @default(now())
+
+  workOrders   WorkOrder[]
+  maintenances MoldMaintenance[]
+
+  @@unique([tenantId, code])
+}
+
+model WorkOrder {
+  id         String          @id @default(cuid())
+  tenantId   String          @default("longteam")
+  code       String // BF-WO-<seq>
+  productName String
+  plannedQty Int
+  status     WorkOrderStatus @default(SCHEDULED)
+  dueDate    DateTime?
+
+  moldId    String
+  mold      Mold    @relation(fields: [moldId], references: [id])
+  machineId String
+  machine   Machine @relation(fields: [machineId], references: [id])
+
+  assigneeId String?
+  assignee   User?   @relation("Assignee", fields: [assigneeId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  reports WorkReport[]
+
+  @@unique([tenantId, code])
+}
+
+model WorkReport {
+  id          String   @id @default(cuid())
+  workOrderId String
+  workOrder   WorkOrder @relation(fields: [workOrderId], references: [id])
+  reporterId  String
+  reporter    User     @relation(fields: [reporterId], references: [id])
+
+  shotCount Int // 本次模次（人工輸入 — 機台無連網）
+  goodQty   Int
+  ngQty     Int
+
+  createdAt DateTime @default(now())
+}
+
+model MoldMaintenance {
+  id                String   @id @default(cuid())
+  moldId            String
+  mold              Mold     @relation(fields: [moldId], references: [id])
+  shotsAtMaintenance Int
+  note              String?
+  createdAt         DateTime @default(now())
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  tenantId  String   @default("longteam")
+  actorId   String?
+  actor     User?    @relation(fields: [actorId], references: [id])
+  action    String // e.g. workorder.start, workorder.report
+  entity    String // e.g. WorkOrder
+  entityId  String
+  detail    Json?
+  createdAt DateTime @default(now())
+}

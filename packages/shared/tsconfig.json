@@ -1,0 +1,1 @@
+{"compilerOptions":{"composite":true,"module":"ES2022","outDir":"dist","rootDir":"src"},"extends":"../../tsconfig.base.json","include":["src"]}
