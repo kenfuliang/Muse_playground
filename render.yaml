@@ -1,13 +1,28 @@
-# Render blueprint — one-click infra for Brainfactory v1 trial.
-# Connect this repo in Render Dashboard -> New -> Blueprint, set env vars once.
+# Brainfactory MES v1 - Render Blueprint
+# Dashboard -> New -> Blueprint -> kenfuliang/Muse_playground
+
+databases:
+  - name: brainfactory-db
+    plan: free
+    postgresMajorVersion: "16"
 
 services:
   - type: web
     name: brainfactory-api
-    env: node
-    plan: starter
-    buildCommand: npm ci && npm run db:generate && npm run build -w packages/shared && npm run build -w packages/db && npm run build -w apps/api
-    startCommand: npm run db:migrate --prefix packages/db 2>/dev/null; node apps/api/dist/main.js
+    runtime: node
+    plan: free
+    healthCheckPath: /api/health
+    buildCommand: >-
+      npm i -g bun &&
+      bun install &&
+      bun run --cwd packages/shared build &&
+      bun run --cwd packages/db build &&
+      bun run --cwd packages/ui build &&
+      bun run --cwd apps/api build
+    startCommand: >-
+      export PATH="$(npm root -g)/.bin:$PATH" &&
+      cd packages/db && bun x prisma migrate deploy && cd ../.. &&
+      node apps/api/dist/main.js
     envVars:
       - key: DATABASE_URL
         fromDatabase:
@@ -15,18 +30,27 @@ services:
           property: connectionString
       - key: JWT_SECRET
         generateValue: true
-    healthCheckPath: /api/health
+      - key: NODE_ENV
+        value: production
 
   - type: web
     name: brainfactory-web
-    env: static
-    plan: starter
-    buildCommand: npm ci && npm run build -w packages/shared && npm run build -w packages/ui && npm run build -w apps/web
+    runtime: static
+    plan: free
+    buildCommand: >-
+      npm i -g bun &&
+      bun install &&
+      bun run --cwd packages/shared build &&
+      bun run --cwd packages/ui build &&
+      cd apps/web && VITE_API_URL="https://$BRAINFACTORY_API_HOST/api" bun run build
     staticPublishPath: apps/web/dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
     envVars:
-      - key: VITE_API_URL
-        value: https://brainfactory-api.onrender.com/api
-
-databases:
-  - name: brainfactory-db
-    plan: starter
+      - key: BRAINFACTORY_API_HOST
+        fromService:
+          type: web
+          name: brainfactory-api
+          property: host
