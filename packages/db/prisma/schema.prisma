@@ -24,7 +24,7 @@ enum WorkOrderStatus {
 
 model User {
   id        String   @id @default(cuid())
-  tenantId  String   @default("longteam")
+  tenantId  String   @default("demo")
   name      String
   badgeCode String   @unique // BF-USER-<id> — 掃證登入
   pin       String? // 4 位 PIN 備案（存 hash）
@@ -39,7 +39,7 @@ model User {
 
 model Machine {
   id        String   @id @default(cuid())
-  tenantId  String   @default("longteam")
+  tenantId  String   @default("demo")
   code      String // 機台編號，如 M-01
   name      String
   tonnage   Int? // 鎖模力（噸）
@@ -53,7 +53,7 @@ model Machine {
 
 model Mold {
   id                       String   @id @default(cuid())
-  tenantId                 String   @default("longteam")
+  tenantId                 String   @default("demo")
   code                     String // 模號，如 MT-8801-A
   name                     String
   cavityCount              Int      @default(1) // 模穴數
@@ -70,7 +70,7 @@ model Mold {
 
 model WorkOrder {
   id         String          @id @default(cuid())
-  tenantId   String          @default("longteam")
+  tenantId   String          @default("demo")
   code       String // BF-WO-<seq>
   productName String
   plannedQty Int
@@ -120,7 +120,7 @@ model MoldMaintenance {
 
 model AuditLog {
   id        String   @id @default(cuid())
-  tenantId  String   @default("longteam")
+  tenantId  String   @default("demo")
   actorId   String?
   actor     User?    @relation(fields: [actorId], references: [id])
   action    String // e.g. workorder.start, workorder.report

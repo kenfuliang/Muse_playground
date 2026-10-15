@@ -4,7 +4,7 @@ CREATE TYPE "WorkOrderStatus" AS ENUM ('SCHEDULED', 'IN_PROGRESS', 'COMPLETED', 
 
 CREATE TABLE "User" (
   id TEXT PRIMARY KEY,
-  "tenantId" TEXT NOT NULL DEFAULT 'longteam',
+  "tenantId" TEXT NOT NULL DEFAULT 'demo',
   name TEXT NOT NULL,
   "badgeCode" TEXT NOT NULL UNIQUE,
   pin TEXT,
@@ -15,7 +15,7 @@ CREATE TABLE "User" (
 
 CREATE TABLE "Machine" (
   id TEXT PRIMARY KEY,
-  "tenantId" TEXT NOT NULL DEFAULT 'longteam',
+  "tenantId" TEXT NOT NULL DEFAULT 'demo',
   code TEXT NOT NULL,
   name TEXT NOT NULL,
   tonnage INTEGER,
@@ -26,7 +26,7 @@ CREATE TABLE "Machine" (
 
 CREATE TABLE "Mold" (
   id TEXT PRIMARY KEY,
-  "tenantId" TEXT NOT NULL DEFAULT 'longteam',
+  "tenantId" TEXT NOT NULL DEFAULT 'demo',
   code TEXT NOT NULL,
   name TEXT NOT NULL,
   "cavityCount" INTEGER NOT NULL DEFAULT 1,
@@ -39,7 +39,7 @@ CREATE TABLE "Mold" (
 
 CREATE TABLE "WorkOrder" (
   id TEXT PRIMARY KEY,
-  "tenantId" TEXT NOT NULL DEFAULT 'longteam',
+  "tenantId" TEXT NOT NULL DEFAULT 'demo',
   code TEXT NOT NULL,
   "productName" TEXT NOT NULL,
   "plannedQty" INTEGER NOT NULL,
@@ -73,7 +73,7 @@ CREATE TABLE "MoldMaintenance" (
 
 CREATE TABLE "AuditLog" (
   id TEXT PRIMARY KEY,
-  "tenantId" TEXT NOT NULL DEFAULT 'longteam',
+  "tenantId" TEXT NOT NULL DEFAULT 'demo',
   "actorId" TEXT REFERENCES "User"(id),
   action TEXT NOT NULL,
   entity TEXT NOT NULL,

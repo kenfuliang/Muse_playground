@@ -99,7 +99,7 @@ brainfactory/
 
 - Postgres：Render 上已經在跑（10/14 驗證過），不用換。
 - Prisma：schema-first、migration 內建、型別自動生成，對 agents 極友好。
-- **核心表預留 `tenant_id`**：現在只有隆廷，但加一個欄位是零成本的保險，將來多廠不用重寫 schema。這是便宜的選擇權，不是過度設計。
+- **核心表預留 `tenant_id`**：現在只有DemoFactory，但加一個欄位是零成本的保險，將來多廠不用重寫 schema。這是便宜的選擇權，不是過度設計。
 
 ---
 

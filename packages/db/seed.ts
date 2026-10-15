@@ -39,19 +39,19 @@ async function main() {
 
   // --- machines ---
   const m1 = await prisma.machine.upsert({
-    where: { tenantId_code: { tenantId: 'longteam', code: 'M-01' } },
+    where: { tenantId_code: { tenantId: 'demo', code: 'M-01' } },
     update: {},
     create: { code: 'M-01', name: '1號機', tonnage: 160 },
   });
   const m2 = await prisma.machine.upsert({
-    where: { tenantId_code: { tenantId: 'longteam', code: 'M-02' } },
+    where: { tenantId_code: { tenantId: 'demo', code: 'M-02' } },
     update: {},
     create: { code: 'M-02', name: '2號機', tonnage: 220 },
   });
 
   // --- molds ---
   const moldA = await prisma.mold.upsert({
-    where: { tenantId_code: { tenantId: 'longteam', code: 'MT-8801-A' } },
+    where: { tenantId_code: { tenantId: 'demo', code: 'MT-8801-A' } },
     update: {},
     create: {
       code: 'MT-8801-A',
@@ -63,7 +63,7 @@ async function main() {
     },
   });
   await prisma.mold.upsert({
-    where: { tenantId_code: { tenantId: 'longteam', code: 'MT-8802-B' } },
+    where: { tenantId_code: { tenantId: 'demo', code: 'MT-8802-B' } },
     update: {},
     create: {
       code: 'MT-8802-B',
