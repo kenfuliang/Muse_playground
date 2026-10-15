@@ -16,7 +16,7 @@ services:
       npm i -g bun &&
       bun install &&
       bun run --cwd packages/shared build &&
-      CHECKPOINT_DISABLE=1 PRISMA_ENGINES_CHECKSUM_IGNORE_MISSING=1 bun run --cwd packages/db build &&
+      CHECKPOINT_DISABLE=1 PRISMA_DISABLE_UPDATE_CHECK=true PRISMA_ENGINES_CHECKSUM_IGNORE_MISSING=1 bun run --cwd packages/db build &&
       bun run --cwd packages/ui build &&
       bun run --cwd apps/api build
     startCommand: >-
