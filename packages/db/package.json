@@ -15,7 +15,7 @@
     "seed": "tsx seed.ts"
   },
   "scripts": {
-    "build": "prisma generate && tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.json",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev --name init",
     "db:seed": "tsx seed.ts",
