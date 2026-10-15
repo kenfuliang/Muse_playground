@@ -21,7 +21,7 @@ services:
       bun run --cwd apps/api build
     startCommand: >-
       export PATH="$(npm root -g)/.bin:$PATH" &&
-      cd packages/db && bun x prisma migrate deploy && bun seed.ts && cd ../.. &&
+      cd packages/db && bun x prisma migrate deploy && cd ../.. &&
       node apps/api/dist/main.js
     envVars:
       - key: DATABASE_URL
