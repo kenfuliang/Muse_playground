@@ -45,6 +45,7 @@ export const reportProductionSchema = z.object({
   shotCount: z.number().int().min(0).describe('模次 — 本次生產的射出次數'),
   goodQty: z.number().int().min(0).describe('良品數'),
   ngQty: z.number().int().min(0).describe('不良數'),
+  idempotencyKey: z.string().min(8).max(64).optional().describe('冪等鍵 — 重試/雙擊不重複計數'),
 });
 export type ReportProductionInput = z.infer<typeof reportProductionSchema>;
 
