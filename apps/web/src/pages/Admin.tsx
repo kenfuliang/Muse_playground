@@ -3,7 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import {
   BigInput, Button, Card, DataTable, EmptyState, Page, StatusPill, TopBar, WarnBanner,
 } from '@brainfactory/ui';
+import { t as dict } from '@brainfactory/shared';
 import { api, clearSession, getSessionUser } from '../api.js';
+
+const t = dict('zh');
 
 /**
  * 生管後台 (v1: 繁中 only).
@@ -101,7 +104,7 @@ export default function Admin() {
                   <span key="c">{o.code}</span>,
                   <span key="p">{o.productName}</span>,
                   <span key="q">{o.plannedQty}</span>,
-                  <span key="s"><StatusPill status={o.status} label={o.status} /></span>,
+                  <span key="s"><StatusPill status={o.status} label={t.status[o.status as keyof typeof t.status]} /></span>,
                   <span key="a">{o.assignee?.name ?? '—'}</span>,
                 ])}
               />
