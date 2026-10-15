@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Headers, Param, Post, UseGuards } from '@nestjs/common';
 import {
   CreateWorkOrderInput,
   ReportProductionInput,
@@ -42,9 +42,11 @@ export class WorkOrdersController {
   report(
     @CurrentUser() user: AuthUser,
     @Param('id') id: string,
+    @Headers('idempotency-key') idempotencyKey: string | undefined,
     @Body(new ZodValidationPipe(reportProductionSchema)) body: ReportProductionInput,
   ) {
-    return this.mes.report(user, id, body);
+    // Header 優先於 body；兩者都沒有也沒關係（不強制）
+    return this.mes.report(user, id, { ...body, idempotencyKey: idempotencyKey ?? body.idempotencyKey });
   }
 
   @Post(':id/complete')
