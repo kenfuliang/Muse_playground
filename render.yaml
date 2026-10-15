@@ -41,15 +41,9 @@ services:
       bun install &&
       bun run --cwd packages/shared build &&
       bun run --cwd packages/ui build &&
-      cd apps/web && VITE_API_URL="https://$BRAINFACTORY_API_HOST/api" bun run build
+      cd apps/web && VITE_API_URL="https://brainfactory-api-i8ow.onrender.com/api" bun run build
     staticPublishPath: apps/web/dist
     routes:
       - type: rewrite
         source: /*
         destination: /index.html
-    envVars:
-      - key: BRAINFACTORY_API_HOST
-        fromService:
-          type: web
-          name: brainfactory-api
-          property: host
