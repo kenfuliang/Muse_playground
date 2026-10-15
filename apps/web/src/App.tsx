@@ -10,15 +10,20 @@ function authed() {
   return !!getSessionUser();
 }
 
+/** Auth check must run at render time, not once at module init. */
+function RequireAuth({ children }: { children: React.ReactNode }) {
+  return authed() ? <>{children}</> : <Navigate to="/" />;
+}
+
 export default function App() {
   return (
     <LangProvider>
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<WorkerLogin />} />
-          <Route path="/jobs" element={authed() ? <MyJobs /> : <Navigate to="/" />} />
-          <Route path="/jobs/:id" element={authed() ? <JobActions /> : <Navigate to="/" />} />
-          <Route path="/admin" element={authed() ? <Admin /> : <Navigate to="/" />} />
+          <Route path="/jobs" element={<RequireAuth><MyJobs /></RequireAuth>} />
+          <Route path="/jobs/:id" element={<RequireAuth><JobActions /></RequireAuth>} />
+          <Route path="/admin" element={<RequireAuth><Admin /></RequireAuth>} />
         </Routes>
       </BrowserRouter>
     </LangProvider>

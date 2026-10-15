@@ -49,6 +49,7 @@ export const api = {
   login: (body: { badgeCode?: string; pin?: string }) =>
     req('/auth/login', { method: 'POST', body: JSON.stringify(body) }),
   myJobs: () => req('/work-orders/my'),
+  allJobs: () => req('/work-orders'),
   job: (id: string) => req(`/work-orders/${id}`),
   start: (id: string) => req(`/work-orders/${id}/start`, { method: 'POST' }),
   report: (id: string, body: { shotCount: number; goodQty: number; ngQty: number }, idempotencyKey?: string) =>

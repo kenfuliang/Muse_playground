@@ -47,6 +47,14 @@ export class MesService {
     return wo;
   }
 
+  /** 生管看全部工單（管理端工單列表） */
+  async listWorkOrders() {
+    return this.prisma.client.workOrder.findMany({
+      include: { mold: true, machine: true, assignee: true },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
   /** 工人的「我的工單」：指派給我的、未完工的單 */
   async myWorkOrders(user: AuthUser) {
     return this.prisma.client.workOrder.findMany({

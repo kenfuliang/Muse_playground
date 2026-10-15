@@ -13,6 +13,7 @@ export default function Admin() {
   const nav = useNavigate();
   const user = getSessionUser();
   const [tab, setTab] = useState<'orders' | 'molds' | 'machines'>('orders');
+  const [orders, setOrders] = useState<any[]>([]);
   const [molds, setMolds] = useState<any[]>([]);
   const [machines, setMachines] = useState<any[]>([]);
   const [due, setDue] = useState<any[]>([]);
@@ -21,6 +22,7 @@ export default function Admin() {
 
   useEffect(() => {
     if (user?.role !== 'ADMIN') { nav('/'); return; }
+    api.allJobs().then(setOrders).catch(() => {});
     api.molds().then(setMolds).catch(() => {});
     api.machines().then(setMachines).catch(() => {});
     api.maintenanceDue().then(setDue).catch(() => {});
@@ -37,6 +39,7 @@ export default function Admin() {
     });
     setShowNew(false);
     setForm({ productName: '', plannedQty: '', moldId: '', machineId: '', assigneeBadge: '', dueDate: '' });
+    setOrders(await api.allJobs());
     alert('工單已建立');
   };
 
@@ -91,6 +94,18 @@ export default function Admin() {
               </Card>
             )}
             <p style={{ color: 'var(--bf-text-2)', fontSize: 14 }}>工單建立後會出現在被指派工人的「我的工單」。</p>
+            {orders.length > 0 && (
+              <DataTable
+                columns={['工單號', '產品', '數量', '狀態', '指派給']}
+                rows={orders.map((o) => [
+                  <span key="c">{o.code}</span>,
+                  <span key="p">{o.productName}</span>,
+                  <span key="q">{o.plannedQty}</span>,
+                  <span key="s"><StatusPill status={o.status} label={o.status} /></span>,
+                  <span key="a">{o.assignee?.name ?? '—'}</span>,
+                ])}
+              />
+            )}
           </>
         )}
 

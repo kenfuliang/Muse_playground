@@ -19,6 +19,12 @@ export class WorkOrdersController {
     return this.mes.myWorkOrders(user);
   }
 
+  @Get()
+  list(@CurrentUser() user: AuthUser) {
+    requireAdmin(user);
+    return this.mes.listWorkOrders();
+  }
+
   @Get(':id')
   one(@CurrentUser() user: AuthUser, @Param('id') id: string) {
     return this.mes.getWorkOrder(user, id);
