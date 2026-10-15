@@ -1,7 +1,8 @@
 {
   "dependencies": {
     "@prisma/client": "^5.22.0",
-    "@brainfactory/shared": "0.1.0"
+    "@brainfactory/shared": "0.1.0",
+    "@prisma/engines": "^5.22.0"
   },
   "devDependencies": {
     "@types/node": "^26.6.5",
