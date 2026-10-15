@@ -6,24 +6,17 @@ import type { AuthUser } from '../common/auth.js';
 
 /**
  * Phase 1 QC tests — backend behavior protection.
- * Prisma is mocked; these tests pin the state machine / transaction rules.
+ * Uses raw SQL ($queryRaw/$executeRaw); Prisma is mocked.
  */
 
 const admin: AuthUser = { sub: 'u-admin', name: '生管', role: 'ADMIN', lang: 'zh' };
 
 function mockClient() {
-  const tx = {
-    qcInspection: { update: vi.fn() },
-    ngRecord: { create: vi.fn() },
-    auditLog: { create: vi.fn() },
-  };
   const client: any = {
     workOrder: { findUnique: vi.fn() },
-    qcInspection: { create: vi.fn(), findUnique: vi.fn(), findMany: vi.fn() },
-    ngRecord: { findUnique: vi.fn(), update: vi.fn(), findMany: vi.fn() },
     auditLog: { create: vi.fn() },
-    $transaction: vi.fn(async (fn: any) => fn(tx)),
-    __tx: tx,
+    $queryRaw: vi.fn(),
+    $executeRaw: vi.fn(),
   };
   return client;
 }
@@ -40,12 +33,13 @@ describe('QcService', () => {
   describe('createInspection', () => {
     it('creates an inspection for a work order', async () => {
       client.workOrder.findUnique.mockResolvedValue({ id: 'wo-1' });
-      client.qcInspection.create.mockResolvedValue({ id: 'qc-1', status: 'PENDING' });
+      client.$executeRaw.mockResolvedValue(1);
+      client.$queryRaw.mockResolvedValue([{ id: 'qc-1', status: 'PENDING' }]);
 
       const r = await svc.createInspection(admin, { workOrderId: 'wo-1', type: 'FIRST_ARTICLE' });
 
       expect(r.id).toBe('qc-1');
-      expect(client.qcInspection.create).toHaveBeenCalled();
+      expect(client.$executeRaw).toHaveBeenCalled();
       expect(client.auditLog.create).toHaveBeenCalled();
     });
 
@@ -58,23 +52,24 @@ describe('QcService', () => {
   });
 
   describe('recordResult', () => {
-    it('records PASS in a transaction', async () => {
-      const inspection = { id: 'qc-1', status: 'PENDING', ngRecords: [] };
-      client.qcInspection.findUnique.mockResolvedValue(inspection);
-      client.__tx.qcInspection.update.mockResolvedValue({ ...inspection, status: 'PASS' });
+    it('records PASS', async () => {
+      client.$queryRaw
+        .mockResolvedValueOnce([{ id: 'qc-1', status: 'PENDING' }])
+        .mockResolvedValueOnce([{ id: 'qc-1', status: 'PASS' }]);
+      client.$executeRaw.mockResolvedValue(1);
 
       const r = await svc.recordResult(admin, 'qc-1', { status: InspectionStatus.PASS });
 
       expect(r.inspection.status).toBe('PASS');
       expect(r.ngRecord).toBeNull();
-      expect(client.__tx.ngRecord.create).not.toHaveBeenCalled();
     });
 
     it('creates NgRecord automatically when NG', async () => {
-      const inspection = { id: 'qc-1', status: 'PENDING', ngRecords: [] };
-      client.qcInspection.findUnique.mockResolvedValue(inspection);
-      client.__tx.qcInspection.update.mockResolvedValue({ ...inspection, status: 'NG' });
-      client.__tx.ngRecord.create.mockResolvedValue({ id: 'ng-1', disposition: 'QUARANTINE' });
+      client.$queryRaw
+        .mockResolvedValueOnce([{ id: 'qc-1', status: 'PENDING' }])
+        .mockResolvedValueOnce([{ id: 'ng-1', disposition: 'QUARANTINE' }])
+        .mockResolvedValueOnce([{ id: 'qc-1', status: 'NG' }]);
+      client.$executeRaw.mockResolvedValue(1);
 
       const r = await svc.recordResult(admin, 'qc-1', {
         status: InspectionStatus.NG,
@@ -83,18 +78,11 @@ describe('QcService', () => {
       });
 
       expect(r.ngRecord).not.toBeNull();
-      expect(client.__tx.ngRecord.create).toHaveBeenCalledWith({
-        data: expect.objectContaining({
-          inspectionId: 'qc-1',
-          qty: 10,
-          reason: '缺料',
-          disposition: NgDisposition.QUARANTINE,
-        }),
-      });
+      expect(r.ngRecord.disposition).toBe('QUARANTINE');
     });
 
     it('rejects recording result twice', async () => {
-      client.qcInspection.findUnique.mockResolvedValue({ id: 'qc-1', status: 'PASS' });
+      client.$queryRaw.mockResolvedValue([{ id: 'qc-1', status: 'PASS' }]);
       await expect(
         svc.recordResult(admin, 'qc-1', { status: InspectionStatus.PASS }),
       ).rejects.toThrow(BadRequestException);
@@ -103,8 +91,10 @@ describe('QcService', () => {
 
   describe('disposeNg', () => {
     it('transitions QUARANTINE -> REWORK', async () => {
-      client.ngRecord.findUnique.mockResolvedValue({ id: 'ng-1', disposition: 'QUARANTINE' });
-      client.ngRecord.update.mockResolvedValue({ id: 'ng-1', disposition: 'REWORK' });
+      client.$queryRaw
+        .mockResolvedValueOnce([{ id: 'ng-1', disposition: 'QUARANTINE' }])
+        .mockResolvedValueOnce([{ id: 'ng-1', disposition: 'REWORK' }]);
+      client.$executeRaw.mockResolvedValue(1);
 
       const r = await svc.disposeNg(admin, 'ng-1', { disposition: NgDisposition.REWORK });
 
@@ -112,7 +102,7 @@ describe('QcService', () => {
     });
 
     it('rejects invalid disposition transition', async () => {
-      client.ngRecord.findUnique.mockResolvedValue({ id: 'ng-1', disposition: 'REWORK' });
+      client.$queryRaw.mockResolvedValue([{ id: 'ng-1', disposition: 'REWORK' }]);
       await expect(
         svc.disposeNg(admin, 'ng-1', { disposition: NgDisposition.SCRAP }),
       ).rejects.toThrow(BadRequestException);

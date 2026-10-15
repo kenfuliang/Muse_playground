@@ -22,24 +22,6 @@ enum WorkOrderStatus {
   CANCELLED
 }
 
-enum InspectionType {
-  FIRST_ARTICLE // 首件
-  PATROL // 巡檢
-}
-
-enum InspectionStatus {
-  PENDING // 待檢
-  PASS // 合格
-  NG // 不合格
-}
-
-enum NgDisposition {
-  QUARANTINE // 隔離
-  REWORK // 重工
-  SCRAP // 報廢
-  CONCESSION // 特採
-}
-
 model User {
   id        String   @id @default(cuid())
   tenantId  String   @default("demo")
@@ -53,7 +35,6 @@ model User {
   workOrders WorkOrder[]   @relation("Assignee")
   reports    WorkReport[]
   auditLogs  AuditLog[]
-  inspections QcInspection[]
 }
 
 model Machine {
@@ -109,7 +90,6 @@ model WorkOrder {
 
   reports WorkReport[]
 
-  inspections QcInspection[]
 
   @@unique([tenantId, code])
 }
@@ -151,30 +131,7 @@ model AuditLog {
   createdAt DateTime @default(now())
 }
 
-model QcInspection {
-  id          String           @id @default(cuid())
-  tenantId    String           @default("demo")
-  workOrderId String
-  workOrder   WorkOrder        @relation(fields: [workOrderId], references: [id])
-  type        InspectionType
-  status      InspectionStatus @default(PENDING)
-  inspectorId String?
-  inspector   User?            @relation(fields: [inspectorId], references: [id])
-  note        String?
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
-
-  ngRecords NgRecord[]
-}
-
-model NgRecord {
-  id           String        @id @default(cuid())
-  inspectionId String
-  inspection   QcInspection  @relation(fields: [inspectionId], references: [id])
-  qty          Int
-  reason       String
-  disposition  NgDisposition @default(QUARANTINE)
-  note         String?
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-}
+// NOTE: QcInspection and NgRecord tables are managed via raw SQL
+// (see migration 0003_qc). They are intentionally NOT in the Prisma
+// schema because `prisma generate` is unreliable on Render's build
+// environment. The QcService uses $queryRaw/$executeRaw.
