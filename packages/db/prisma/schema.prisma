@@ -104,6 +104,8 @@ model WorkReport {
   goodQty   Int
   ngQty     Int
 
+  idempotencyKey String? @unique // 冪等鍵 — 重試/雙擊不重複計數（Phase 0）
+
   createdAt DateTime @default(now())
 }
 

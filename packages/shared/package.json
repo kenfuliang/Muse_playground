@@ -8,7 +8,8 @@
   },
   "exports": {
     ".": "./dist/index.js",
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./pin": "./dist/pin.js"
   },
   "main": "./dist/index.js",
   "name": "@brainfactory/shared",
@@ -19,5 +20,12 @@
   },
   "types": "./dist/index.d.ts",
   "version": "0.1.0",
-  "type": "module"
+  "type": "module",
+  "typesVersions": {
+    "*": {
+      "pin": [
+        "./dist/pin.d.ts"
+      ]
+    }
+  }
 }

@@ -5,20 +5,21 @@
  * Run: npm run db:seed -w packages/db   (needs DATABASE_URL)
  */
 import { PrismaClient } from '@prisma/client';
-import { createHash } from 'node:crypto';
+import { hashPin } from '@brainfactory/shared/pin';
 
 const prisma = new PrismaClient();
-const pinHash = (pin: string) => createHash('sha256').update(pin).digest('hex');
 
 async function main() {
   // --- users ---
+  const adminPin = await hashPin('0000');
+  const workerPin = await hashPin('1234');
   const admin = await prisma.user.upsert({
     where: { badgeCode: 'BF-USER-admin' },
     update: {},
     create: {
       name: '生管',
       badgeCode: 'BF-USER-admin',
-      pin: pinHash('0000'),
+      pin: adminPin,
       role: 'ADMIN',
       lang: 'zh',
     },
@@ -30,7 +31,7 @@ async function main() {
     create: {
       name: '阿明',
       badgeCode: 'BF-USER-w001',
-      pin: pinHash('1234'),
+      pin: workerPin,
       role: 'WORKER',
       lang: 'vi',
     },
