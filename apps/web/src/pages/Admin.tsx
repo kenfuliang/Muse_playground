@@ -5,17 +5,18 @@ import {
 } from '@brainfactory/ui';
 import { t as dict } from '@brainfactory/shared';
 import { api, clearSession, getSessionUser } from '../api.js';
+import QcPanel from './QcPanel.js';
 
 const t = dict('zh');
 
 /**
  * 生管後台 (v1: 繁中 only).
- * Tabs: 工單 / 模具 / 機台. 工單建立 = 排程：選模具＋機台＋產品＋數量＋指派人.
+ * Tabs: 工單 / 模具 / 機台 / 品檢. 工單建立 = 排程：選模具＋機台＋產品＋數量＋指派人.
  */
 export default function Admin() {
   const nav = useNavigate();
   const user = getSessionUser();
-  const [tab, setTab] = useState<'orders' | 'molds' | 'machines'>('orders');
+  const [tab, setTab] = useState<'orders' | 'molds' | 'machines' | 'qc'>('orders');
   const [orders, setOrders] = useState<any[]>([]);
   const [molds, setMolds] = useState<any[]>([]);
   const [machines, setMachines] = useState<any[]>([]);
@@ -67,12 +68,14 @@ export default function Admin() {
       />
       <Page>
         <div className="bf-tabs">
-          {(['orders', 'molds', 'machines'] as const).map((k) => (
+          {(['orders', 'molds', 'machines', 'qc'] as const).map((k) => (
             <Button key={k} size="md" kind={tab === k ? 'primary' : 'ghost'} onClick={() => setTab(k)}>
-              {k === 'orders' ? '工單' : k === 'molds' ? '模具' : '機台'}
+              {k === 'orders' ? '工單' : k === 'molds' ? '模具' : k === 'machines' ? '機台' : '品檢'}
             </Button>
           ))}
         </div>
+
+        {tab === 'qc' && <QcPanel />}
 
         {tab === 'orders' && (
           <>

@@ -65,4 +65,13 @@ export const api = {
   maintenanceDue: () => req('/molds/maintenance-due'),
   maintain: (id: string, note?: string) =>
     req(`/molds/${id}/maintain`, { method: 'POST', body: JSON.stringify({ note }) }),
+  // QC (Phase 1)
+  qcPending: () => req('/qc/pending'),
+  qcCreate: (body: { workOrderId: string; type: 'FIRST_ARTICLE' | 'PATROL'; note?: string }) =>
+    req('/qc/inspections', { method: 'POST', body: JSON.stringify(body) }),
+  qcResult: (id: string, body: { status: 'PASS' | 'NG'; note?: string; ngQty?: number; ngReason?: string }) =>
+    req(`/qc/inspections/${id}/result`, { method: 'POST', body: JSON.stringify(body) }),
+  qcNgRecords: () => req('/qc/ng-records'),
+  qcDispose: (id: string, body: { disposition: 'REWORK' | 'SCRAP' | 'CONCESSION'; note?: string }) =>
+    req(`/qc/ng-records/${id}/dispose`, { method: 'POST', body: JSON.stringify(body) }),
 };

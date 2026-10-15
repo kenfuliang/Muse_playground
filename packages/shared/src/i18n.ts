@@ -14,6 +14,7 @@ export type Dict = {
   jobs: Record<'title' | 'empty' | 'workOrderNo' | 'product' | 'plannedQty' | 'machine' | 'mold' | 'dueDate' | 'open', string>;
   job: Record<'start' | 'report' | 'complete' | 'shots' | 'shotsHint' | 'goodQty' | 'ngQty' | 'submitReport' | 'reportSuccess' | 'confirmComplete' | 'back', string>;
   status: Record<'SCHEDULED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED', string>;
+  qc: Record<'inspection' | 'firstArticle' | 'patrol' | 'pending' | 'pass' | 'ng' | 'quarantine' | 'rework' | 'scrap' | 'concession', string>;
   common: Record<'logout' | 'cancel' | 'confirm' | 'loading' | 'error', string>;
 };
 
@@ -57,6 +58,18 @@ const zh: Dict = {
     IN_PROGRESS: '生產中',
     COMPLETED: '已完工',
     CANCELLED: '已取消',
+  },
+  qc: {
+    inspection: '檢驗',
+    firstArticle: '首件',
+    patrol: '巡檢',
+    pending: '待檢',
+    pass: '合格',
+    ng: '不合格',
+    quarantine: '隔離',
+    rework: '重工',
+    scrap: '報廢',
+    concession: '特採',
   },
   common: {
     logout: '登出',
@@ -107,6 +120,18 @@ const vi: Dict = {
     IN_PROGRESS: 'Đang sản xuất',
     COMPLETED: 'Hoàn thành',
     CANCELLED: 'Đã hủy',
+  },
+  qc: {
+    inspection: 'Kiểm tra',
+    firstArticle: 'Kiểm tra đầu tiên',
+    patrol: 'Kiểm tra tuần tra',
+    pending: 'Chờ kiểm tra',
+    pass: 'Đạt',
+    ng: 'Không đạt',
+    quarantine: 'Cách ly',
+    rework: 'Làm lại',
+    scrap: 'Hủy bỏ',
+    concession: 'Chấp nhận đặc biệt',
   },
   common: {
     logout: 'Đăng xuất',

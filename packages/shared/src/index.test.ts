@@ -4,6 +4,13 @@ import { classifyBarcode, makeBadgeCode, stripPrefix } from './barcode.js';
 import { isMaintenanceDue, shotsSinceMaintenance, shotsUntilMaintenance } from './maintenance.js';
 import { hashPin, verifyPin } from './pin.js';
 import { t } from './i18n.js';
+import {
+  canTransitionInspection,
+  canTransitionDisposition,
+  createInspectionSchema,
+  recordResultSchema,
+  disposeNgSchema,
+} from './qc.js';
 
 describe('work order state machine', () => {
   it('allows SCHEDULED -> IN_PROGRESS -> COMPLETED', () => {
@@ -89,5 +96,59 @@ describe('report idempotency schema (Phase 0)', () => {
     expect(() =>
       reportProductionSchema.parse({ shotCount: 10, goodQty: 9, ngQty: 1, idempotencyKey: 'abc' }),
     ).toThrow();
+  });
+});
+
+describe('QC inspection state machine', () => {
+  it('allows PENDING -> PASS and PENDING -> NG', () => {
+    expect(canTransitionInspection('PENDING', 'PASS')).toBe(true);
+    expect(canTransitionInspection('PENDING', 'NG')).toBe(true);
+  });
+  it('rejects transitions from terminal states', () => {
+    expect(canTransitionInspection('PASS', 'NG')).toBe(false);
+    expect(canTransitionInspection('NG', 'PASS')).toBe(false);
+    expect(canTransitionInspection('PASS', 'PENDING')).toBe(false);
+  });
+});
+
+describe('NG disposition state machine', () => {
+  it('allows QUARANTINE -> REWORK/SCRAP/CONCESSION', () => {
+    expect(canTransitionDisposition('QUARANTINE', 'REWORK')).toBe(true);
+    expect(canTransitionDisposition('QUARANTINE', 'SCRAP')).toBe(true);
+    expect(canTransitionDisposition('QUARANTINE', 'CONCESSION')).toBe(true);
+  });
+  it('rejects transitions from terminal dispositions', () => {
+    expect(canTransitionDisposition('REWORK', 'SCRAP')).toBe(false);
+    expect(canTransitionDisposition('SCRAP', 'QUARANTINE')).toBe(false);
+  });
+});
+
+describe('QC schemas', () => {
+  it('accepts a valid inspection creation', () => {
+    const r = createInspectionSchema.parse({ workOrderId: 'wo1', type: 'FIRST_ARTICLE' });
+    expect(r.type).toBe('FIRST_ARTICLE');
+  });
+  it('accepts PASS without NG fields', () => {
+    const r = recordResultSchema.parse({ status: 'PASS' });
+    expect(r.status).toBe('PASS');
+  });
+  it('requires ngQty and ngReason when NG', () => {
+    expect(() => recordResultSchema.parse({ status: 'NG' })).toThrow();
+    const r = recordResultSchema.parse({ status: 'NG', ngQty: 5, ngReason: '缺料' });
+    expect(r.ngQty).toBe(5);
+  });
+  it('accepts valid dispositions', () => {
+    const r = disposeNgSchema.parse({ disposition: 'REWORK' });
+    expect(r.disposition).toBe('REWORK');
+  });
+});
+
+describe('QC i18n', () => {
+  it('has zh and vi for all QC keys', () => {
+    const zhQc = t('zh').qc;
+    const viQc = t('vi').qc;
+    for (const k of Object.keys(zhQc) as (keyof typeof zhQc)[]) {
+      expect(viQc[k]).toBeTruthy();
+    }
   });
 });
