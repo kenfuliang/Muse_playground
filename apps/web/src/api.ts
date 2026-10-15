@@ -51,8 +51,12 @@ export const api = {
   myJobs: () => req('/work-orders/my'),
   job: (id: string) => req(`/work-orders/${id}`),
   start: (id: string) => req(`/work-orders/${id}/start`, { method: 'POST' }),
-  report: (id: string, body: { shotCount: number; goodQty: number; ngQty: number }) =>
-    req(`/work-orders/${id}/report`, { method: 'POST', body: JSON.stringify(body) }),
+  report: (id: string, body: { shotCount: number; goodQty: number; ngQty: number }, idempotencyKey?: string) =>
+    req(`/work-orders/${id}/report`, {
+      method: 'POST',
+      body: JSON.stringify(body),
+      headers: idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {},
+    }),
   complete: (id: string) => req(`/work-orders/${id}/complete`, { method: 'POST' }),
   createOrder: (body: object) => req('/work-orders', { method: 'POST', body: JSON.stringify(body) }),
   machines: () => req('/machines'),

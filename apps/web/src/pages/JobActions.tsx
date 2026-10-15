@@ -38,11 +38,12 @@ export default function JobActions() {
   };
   const doReport = async () => {
     try {
+      // 冪等鍵：每次報工生成一個，雙擊/重試不會重複計數
       const r = await api.report(id!, {
         shotCount: Number(shots) || 0,
         goodQty: Number(good) || 0,
         ngQty: Number(ng) || 0,
-      });
+      }, crypto.randomUUID());
       setReporting(false);
       setShots(''); setGood(''); setNg('');
       showFlash('success', t.job.reportSuccess);
